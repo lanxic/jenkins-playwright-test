@@ -1,9 +1,9 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.47.0-jammy'
-            args '-u root:root'   // biar bisa install dependency, optional
-        }
+    agent any
+
+    environment {
+        IMAGE_NAME = "jenkins-playwright-test"
+        REPORT_DIR = "playwright-report"
     }
 
     stages {
@@ -13,24 +13,31 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Docker Image') {
             steps {
-                sh 'npm install'
-                // kalau pakai TypeScript bisa build dulu:
-                // sh 'npx tsc'
+                script {
+                    sh "docker build -t ${IMAGE_NAME} ."
+                }
             }
         }
 
         stage('Run Playwright Tests') {
             steps {
-                sh 'npx playwright test --reporter=html'
+                script {
+                    sh "mkdir -p ${REPORT_DIR}"
+                    sh """
+                    docker run --rm \
+                        -v \$(pwd)/${REPORT_DIR}:/app/${REPORT_DIR} \
+                        ${IMAGE_NAME}
+                    """
+                }
             }
         }
 
         stage('Publish Report') {
             steps {
                 publishHTML([
-                    reportDir: 'playwright-report',
+                    reportDir: "${REPORT_DIR}",
                     reportFiles: 'index.html',
                     reportName: 'Playwright Test Report',
                     keepAll: true,
@@ -38,6 +45,13 @@ pipeline {
                     allowMissing: true
                 ])
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up..."
+            sh "docker rmi ${IMAGE_NAME} || true"
         }
     }
 }

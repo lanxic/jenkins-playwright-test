@@ -4,8 +4,9 @@ export default defineConfig({
   testDir: './tests',
   timeout: 30 * 1000,
   use: {
-    headless: true,   // kalau mau lihat browser ganti ke false
+    headless: true,
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'retain-on-failure'
   },
+  reporter: [['html', { outputFolder: 'playwright-report' }]]
 });
