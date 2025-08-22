@@ -58,6 +58,9 @@ pipeline {
     }
 
     post {
+        always {
+            archiveArtifacts artifacts: 'test-results/**/*.png, test-results/**/*.webm, test-results/**/*.zip, test-results/**/*.json, test-results/**/*.md', fingerprint: true
+        }
         success {
             echo '✅ All tests passed!'
         }
