@@ -50,10 +50,10 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            echo "Cleaning up..."
-            sh "docker rmi ${IMAGE_NAME} || true"
-        }
-    }
+    // post {
+    //     always {
+    //         echo "Cleaning up..."
+    //         sh "docker rmi ${IMAGE_NAME} || true"
+    //     }
+    // }
 }
