@@ -5,8 +5,8 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
   use: {
     trace: 'on-first-retry',        // simpan trace kalau test fail
-    screenshot: 'only-on-failure',  // screenshot otomatis kalau fail
-    video: 'retain-on-failure',     // simpan video hanya kalau fail
+    screenshot: 'on',  // screenshot otomatis kalau fail
+    video: 'on',     // simpan video hanya kalau fail
   },
   projects: [
     {
