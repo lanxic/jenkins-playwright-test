@@ -29,6 +29,8 @@ pipeline {
                     docker run --rm \
                         -v \$(pwd)/${REPORT_DIR}:/app/${REPORT_DIR} \
                         ${IMAGE_NAME}
+                    echo "Exit code: \$?"
+                    set -e
                     """
                 }
             }
