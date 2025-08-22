@@ -24,14 +24,16 @@ pipeline {
         stage('Run Playwright Tests') {
             steps {
                 script {
-                    sh "mkdir -p ${REPORT_DIR}"
-                    sh """
-                    docker run --rm \
-                        -v \$(pwd)/${REPORT_DIR}:/app/${REPORT_DIR} \
-                        ${IMAGE_NAME}
-                    echo "Exit code: \$?"
-                    set -e
-                    """
+                    // Gunakan catchError supaya tidak menghentikan pipeline
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                        sh "mkdir -p ${REPORT_DIR}"
+
+                        sh """
+                        docker run --rm -u root \
+                            -v \$(pwd)/${REPORT_DIR}:/app/${REPORT_DIR} \
+                            ${IMAGE_NAME}
+                        """
+                    }
                 }
             }
         }
@@ -50,10 +52,10 @@ pipeline {
         }
     }
 
-    // post {
-    //     always {
-    //         echo "Cleaning up..."
-    //         sh "docker rmi ${IMAGE_NAME} || true"
-    //     }
-    // }
+    post {
+        always {
+            echo "Cleaning up..."
+            sh "docker rmi ${IMAGE_NAME} || true"
+        }
+    }
 }
