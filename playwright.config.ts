@@ -1,12 +1,17 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 30 * 1000,
+  reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
   use: {
-    headless: true,
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure'
+    trace: 'on-first-retry',        // simpan trace kalau test fail
+    screenshot: 'only-on-failure',  // screenshot otomatis kalau fail
+    video: 'retain-on-failure',     // simpan video hanya kalau fail
   },
-  reporter: [['html', { outputFolder: 'playwright-report' }]]
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
 });

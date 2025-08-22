@@ -1,15 +1,20 @@
-FROM mcr.microsoft.com/playwright:v1.47.0-jammy
+FROM mcr.microsoft.com/playwright:v1.55.0-noble
 
+# Set working directory
 WORKDIR /app
 
-# copy package.json dulu
+# Copy package.json + package-lock.json
 COPY package*.json ./
-RUN npm install
 
-# copy semua source termasuk tests/
-COPY . .
+# Install dependencies
+RUN npm ci
 
-# install browser + deps
-RUN npx playwright install --with-deps
+# Copy test source code
+COPY tests/ ./tests
 
-CMD ["npx", "playwright", "test", "--reporter=html"]
+# Environment variables untuk folder hasil test
+ENV PLAYWRIGHT_REPORT=/app/playwright-report
+ENV PLAYWRIGHT_RESULTS=/app/test-results
+
+# Default command: run tests + generate report
+CMD ["npx", "playwright", "test", "--reporter=html", "--output", "/app/test-results", "--reporter", "line"]

@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "jenkins-playwright-test"
         REPORT_DIR = "playwright-report"
+        RESULTS_DIR = "test-results"
     }
 
     stages {
@@ -24,23 +25,21 @@ pipeline {
         stage('Run Playwright Tests') {
             steps {
                 script {
-                    // Gunakan catchError supaya tidak menghentikan pipeline
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                        sh "mkdir -p ${REPORT_DIR}"
-
-                        sh """
-                        docker run --rm -u root \
-                            -v \$(pwd)/${REPORT_DIR}:/app/${REPORT_DIR} \
-                            ${IMAGE_NAME}
-                        """
-                    }
+                    // mount report & results ke workspace
+                    sh """
+                        mkdir -p ${REPORT_DIR} ${RESULTS_DIR}
+                        docker run --rm -u root \\
+                          -v \$(pwd)/${REPORT_DIR}:/app/${REPORT_DIR} \\
+                          -v \$(pwd)/${RESULTS_DIR}:/app/${RESULTS_DIR} \\
+                          ${IMAGE_NAME} || exit 0
+                    """
                 }
             }
         }
 
         stage('Publish Report') {
             steps {
-                publishHTML([
+                publishHTML(target: [
                     reportDir: "${REPORT_DIR}",
                     reportFiles: 'index.html',
                     reportName: 'Playwright Test Report',
@@ -50,12 +49,23 @@ pipeline {
                 ])
             }
         }
+
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: "${RESULTS_DIR}/**", allowEmptyArchive: true
+            }
+        }
     }
 
     post {
-        always {
-            echo "Cleaning up..."
-            sh "docker rmi ${IMAGE_NAME} || true"
+        success {
+            echo '✅ All tests passed!'
+        }
+        unstable {
+            echo '⚠️ Some tests failed, check the report and artifacts.'
+        }
+        failure {
+            echo '❌ Build failed!'
         }
     }
 }

@@ -1,15 +1,10 @@
 {
   "name": "jenkins-playwright-test",
   "version": "1.0.0",
-  "description": "Demo project Playwright untuk Docker & Jenkins",
   "scripts": {
-    "test": "npx playwright test",
-    "test:headed": "npx playwright test --headed",
-    "report": "npx playwright show-report"
+    "test": "npx playwright test --reporter=html --output=./test-results"
   },
   "devDependencies": {
-    "@playwright/test": "^1.47.0",
-    "typescript": "^5.6.3",
-    "ts-node": "^10.9.2"
+    "@playwright/test": "^1.55.0"
   }
 }
